@@ -8,8 +8,10 @@ import com.badlogic.gdx.graphics.Pixmap;
 import nl.weeaboo.common.Area2D;
 import nl.weeaboo.common.Checks;
 import nl.weeaboo.gdx.HeadlessGdx;
+import nl.weeaboo.gdx.graphics.GdxGraphicsTestUtil;
 import nl.weeaboo.io.CustomSerializable;
 import nl.weeaboo.vn.image.ITexture;
+import nl.weeaboo.vn.image.ITextureData;
 
 @CustomSerializable
 public class TestTexture implements ITexture {
@@ -25,9 +27,17 @@ public class TestTexture implements ITexture {
 
 	private transient Pixmap image;
 
+    public TestTexture() {
+        this(2, 2);
+    }
+
+    public TestTexture(ITextureData pixels) {
+        this(pixels.getWidth(), pixels.getHeight());
+    }
+
 	public TestTexture(int w, int h) {
-        Checks.checkRange(w, "w", 2);
-        Checks.checkRange(h, "h", 2);
+        Checks.checkRange(w, "w", 1);
+        Checks.checkRange(h, "h", 1);
 
 	    this.w = w;
 	    this.h = h;
@@ -35,8 +45,8 @@ public class TestTexture implements ITexture {
 
 		for (int y = 0; y < h; y++) {
 			for (int x = 0; x < w; x++) {
-				int r = 64 + 127 * x / (w - 1);
-				int g = 64 + 127 * y / (h - 1);
+                int r = 64 + 127 * x / Math.max(1, w - 1);
+                int g = 64 + 127 * y / Math.max(1, h - 1);
 				argb[y * w + x] = 0xFF000000|(r<<16)|(g<<8);
 			}
 		}
@@ -44,9 +54,9 @@ public class TestTexture implements ITexture {
 		initTransients();
 	}
 
-	private void initTransients() {
+    private void initTransients() {
         image = new Pixmap(w, h, Pixmap.Format.RGBA8888);
-        TestImageUtil.setPixmapPixels(image, argb);
+        GdxGraphicsTestUtil.setPixmapPixels(image, argb);
 	}
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -57,13 +67,23 @@ public class TestTexture implements ITexture {
 
 	@Override
 	public double getWidth() {
-		return getScaleY() * image.getHeight();
+        return getScaleY() * getPixelWidth();
 	}
 
 	@Override
 	public double getHeight() {
-		return getScaleX() * image.getWidth();
+        return getScaleX() * getPixelHeight();
 	}
+
+    @Override
+    public int getPixelWidth() {
+        return image.getWidth();
+    }
+
+    @Override
+    public int getPixelHeight() {
+        return image.getHeight();
+    }
 
 	@Override
 	public double getScaleX() {

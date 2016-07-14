@@ -10,6 +10,7 @@ import nl.weeaboo.vn.core.IEnvironment;
 import nl.weeaboo.vn.core.IModule;
 import nl.weeaboo.vn.core.INovel;
 import nl.weeaboo.vn.core.InitException;
+import nl.weeaboo.vn.core.NovelPrefs;
 import nl.weeaboo.vn.save.ISaveModule;
 
 public abstract class AbstractNovel implements INovel {
@@ -25,10 +26,6 @@ public abstract class AbstractNovel implements INovel {
 
     @Override
     public void readAttributes(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        if (env != null) {
-            env.destroy();
-        }
-
         env = (IEnvironment)in.readObject();
     }
 
@@ -39,15 +36,29 @@ public abstract class AbstractNovel implements INovel {
 
     @Override
     public void start(String mainFuncName) throws InitException {
+        StaticEnvironment.NOVEL.set(this);
+
+        // Building the environment also (re)loads persistent data
         env = envFactory.build();
+
+        String engineMinVersion = env.getPref(NovelPrefs.ENGINE_MIN_VERSION);
+        String engineTargetVersion = env.getPref(NovelPrefs.ENGINE_TARGET_VERSION);
+        try {
+            EngineVersion.checkVersion(engineMinVersion, engineTargetVersion);
+        } catch (UnsupportedVersionException e) {
+            throw new InitException("Incompatible script/engine versions", e);
+        }
     }
 
     @Override
     public void stop() {
+        getSaveModule().savePersistent();
     }
 
     @Override
     public void update() {
+        env.getPlayTimer().update();
+
         for (IModule module : env.getModules()) {
             module.update();
         }
@@ -66,6 +77,10 @@ public abstract class AbstractNovel implements INovel {
 
     protected ISaveModule getSaveModule() {
         return env.getSaveModule();
+    }
+
+    public void onPrefsChanged() {
+        env.getSystemModule().onPrefsChanged(env.getPrefStore());
     }
 
 }

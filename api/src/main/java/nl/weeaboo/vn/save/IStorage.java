@@ -18,7 +18,6 @@ import java.util.Collection;
  */
 public interface IStorage extends Serializable {
 
-    // === Functions ===========================================================
     /**
      * Removes all stored values.
      */
@@ -43,8 +42,6 @@ public interface IStorage extends Serializable {
      * {@code prefix}. Any existing values are overwritten.
      */
     void addAll(String prefix, IStorage val);
-
-    // === Getters =============================================================
 
     /**
      * @see #getKeys(String)
@@ -85,12 +82,12 @@ public interface IStorage extends Serializable {
     int getInt(String key, int defaultValue);
 
     /**
-     * Convenience method for retrieving a floating-point value in single precision. This is equivalent to
-     * calling {@link IStorage#getDouble(String, double)} and casting the result to float.
+     * Convenience method for retrieving a 64-bit signed integer. This is equivalent to calling
+     * {@link IStorage#getDouble(String, double)} and casting the result to long.
      *
      * @see #getDouble(String, double)
      */
-    float getFloat(String key, float defaultValue);
+    long getLong(String keyTotal, long defaultValue);
 
     /**
      * Returns value stored under the given key converted to a double.
@@ -108,8 +105,6 @@ public interface IStorage extends Serializable {
      */
     String getString(String key, String defaultValue);
 
-    // === Setters =============================================================
-
     /**
      * Stores a value under the given key. If {@code null}, removes any existing mapping for the given key
      * instead.
@@ -118,6 +113,7 @@ public interface IStorage extends Serializable {
 
     /**
      * Stores a boolean value under the given key.
+     *
      * @see #setString(String, String)
      */
     void setBoolean(String key, boolean val);
@@ -131,12 +127,12 @@ public interface IStorage extends Serializable {
     void setInt(String key, int val);
 
     /**
-     * Convenience method for storing a single-precision floating point number. All values are stored as
-     * double-precision floating point internally.
+     * Convenience method for storing a long. All values are stored as double-precision floating point
+     * internally.
      *
      * @see #setDouble(String, double)
      */
-    void setFloat(String key, float val);
+    void setLong(String key, long val);
 
     /**
      * Stores a double-precision floating point value under the given key.

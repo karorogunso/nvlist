@@ -5,13 +5,17 @@ import java.io.Serializable;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.badlogic.gdx.utils.Disposable;
 
-import nl.weeaboo.vn.NvlTestUtil;
+import nl.weeaboo.vn.CoreTestUtil;
 import nl.weeaboo.vn.core.impl.StaticRef;
 
 public class GeneratedResourceStoreTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(GeneratedResourceStoreTest.class);
 
     private StaticRef<GeneratedResourceStore> TEST_ID = StaticRef.from("test", GeneratedResourceStore.class);
     private GeneratedResourceStore store;
@@ -27,7 +31,7 @@ public class GeneratedResourceStoreTest {
         garbageCollect(0); // Unreferences resources get collected
 
         IResource<Dummy> alpha = createResource(2);
-        System.out.println(alpha.get());
+        LOG.info(String.valueOf(alpha.get()));
         createResource(3);
 
         garbageCollect(1); // We're still holding a reference to alpha
@@ -49,7 +53,7 @@ public class GeneratedResourceStoreTest {
             if (store.size() == expectedSize) {
                 break;
             }
-            NvlTestUtil.trySleep(100);
+            CoreTestUtil.trySleep(100);
         }
     }
 

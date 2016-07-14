@@ -9,7 +9,7 @@ public final class EngineVersion {
     private static final VersionNumber VERSION = new VersionNumber(VERSION_MAJOR, VERSION_MINOR);
 
     /** The oldest target engine version we're still reasonably backwards-compatible with */
-    private static final VersionNumber MIN_COMPAT_VERSION = new VersionNumber(3, 0);
+    private static final VersionNumber MIN_COMPAT_VERSION = new VersionNumber(4, 0);
 
     private EngineVersion() {
     }
@@ -17,7 +17,7 @@ public final class EngineVersion {
     /**
      * @param engineMinVersion The minimum engine version the game script claims to support.
      * @param engineTargetVersion The newest engine version this game script was tested against.
-     *        Backwards-compatibility hack will treat the game script as if it were written for this
+     *        Backwards-compatibility hacks will treat the game script as if it were written for this
      *        particular engine version.
      * @throws UnsupportedVersionException if the engine version is too old, or if the script version is no
      *         longer supported.

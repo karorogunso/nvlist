@@ -1,0 +1,42 @@
+
+@@
+
+--Import built-in NVList functions
+require("builtin/vn")
+
+function main()
+	print("main")
+	return titlescreen()
+end
+
+function titlescreen()
+	print("titlescreen")
+
+	print(System.getEnv())
+
+	local textbox = Text.createTextDrawable()
+	setMainTextBox(textbox)
+	
+	local pad = 16
+	textbox:setBounds(pad, pad, textbox:getWidth() - pad * 2, textbox:getHeight() / 4)
+	textbox:setText("Test sentence for the text drawable.\nSecond line of text.")
+	textbox:setVisibleText(0)
+	
+	waitClick()
+@@
+ABC 1   
+ABC 2   
+ABC 3   
+ABC 4   
+ABC 5   
+@@
+
+    movie("test")
+    
+@@    
+Finished
+@@
+
+end
+
+@@

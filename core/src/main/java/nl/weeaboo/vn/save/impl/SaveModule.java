@@ -22,11 +22,10 @@ import nl.weeaboo.io.CustomSerializable;
 import nl.weeaboo.lua2.io.LuaSerializer;
 import nl.weeaboo.lua2.io.ObjectDeserializer;
 import nl.weeaboo.lua2.io.ObjectSerializer;
-import nl.weeaboo.lua2.io.ObjectSerializer.PackageLimit;
+import nl.weeaboo.lua2.io.ObjectSerializer.ErrorLevel;
 import nl.weeaboo.vn.core.IEnvironment;
 import nl.weeaboo.vn.core.INovel;
 import nl.weeaboo.vn.core.IProgressListener;
-import nl.weeaboo.vn.core.impl.Storage;
 import nl.weeaboo.vn.image.IScreenshot;
 import nl.weeaboo.vn.image.impl.PixmapDecodingScreenshot;
 import nl.weeaboo.vn.save.ISaveModule;
@@ -41,6 +40,7 @@ public class SaveModule implements ISaveModule {
     private static final long serialVersionUID = SaveImpl.serialVersionUID;
     private static final Logger LOG = LoggerFactory.getLogger(SaveModule.class);
     private static final String SHARED_GLOBALS_PATH = "save-shared.bin";
+    private static final String SEEN_LOG_PATH = "seen.bin";
     private static final int QUICK_SAVE_OFFSET = 800;
     private static final int AUTO_SAVE_OFFSET = 900;
 
@@ -91,6 +91,21 @@ public class SaveModule implements ISaveModule {
     @Override
     public void loadPersistent() {
         tryLoadSharedGlobals();
+
+        try {
+            env.getPlayTimer().load(sharedGlobals);
+        } catch (IOException e) {
+            LOG.error("Unable to load play timer state from shared globals", e);
+        }
+
+        SecureFileWriter sfw = getSecureFileWriter();
+        try {
+            env.getSeenLog().load(sfw, SEEN_LOG_PATH);
+        } catch (FileNotFoundException fnfe) {
+            // Seen log doesn't exist yet, not an error
+        } catch (IOException ioe) {
+            LOG.error("Error loading seen log", ioe);
+        }
     }
 
     private void tryLoadSharedGlobals() {
@@ -117,17 +132,26 @@ public class SaveModule implements ISaveModule {
 
     @Override
     public void savePersistent() {
+        SecureFileWriter sfw = getSecureFileWriter();
+
         try {
-            saveSharedGlobals();
+            env.getPlayTimer().save(sharedGlobals);
+        } catch (IOException e) {
+            LOG.error("Unable to save play timer state to shared globals", e);
+        }
+
+        try {
+            StorageIO.write(sharedGlobals, sfw, SHARED_GLOBALS_PATH);
         } catch (IOException e) {
             LOG.error("Unable to save shared globals", e);
         }
-        generatePreloaderData();
-    }
 
-    private void saveSharedGlobals() throws IOException {
-        SecureFileWriter sfw = getSecureFileWriter();
-        StorageIO.write(sharedGlobals, sfw, SHARED_GLOBALS_PATH);
+        try {
+            env.getSeenLog().save(sfw, SEEN_LOG_PATH);
+        } catch (IOException e) {
+            LOG.error("Unable to save seen log", e);
+        }
+        generatePreloaderData();
     }
 
     protected void generatePreloaderData() {
@@ -218,6 +242,9 @@ public class SaveModule implements ISaveModule {
         InputStream in = ProgressInputStream.wrap(fs.openInputStream(SaveFileConstants.SAVEDATA_PATH),
                 fs.getFileSize(SaveFileConstants.SAVEDATA_PATH), pl);
 
+        // Clean up resources for current environment before we start loading a new one
+        novel.getEnv().destroy();
+
         try {
             ObjectDeserializer is = luaSerializer.openDeserializer(in);
             try {
@@ -262,14 +289,15 @@ public class SaveModule implements ISaveModule {
             }
         }
 
-        LOG.info("Save written: " + StringUtil.formatMemoryAmount(fs.getFileSize(filename)));
+        LOG.info("Save written: {}", StringUtil.formatMemoryAmount(fs.getFileSize(filename)));
     }
 
     private void writeSaveData(ZipOutputStream zout, INovel novel, IProgressListener pl) throws IOException {
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         ObjectSerializer os = luaSerializer.openSerializer(ProgressOutputStream.wrap(bout, pl));
         try {
-            os.setPackageLimit(PackageLimit.NONE);
+            os.setCollectStats(true);
+            os.setPackageErrorLevel(ErrorLevel.NONE);
             novel.writeAttributes(os);
             os.flush();
 
@@ -289,6 +317,9 @@ public class SaveModule implements ISaveModule {
      * @param warnings A collection of warnings generated while saving.
      */
     protected void handleSaveWarnings(INovel novel, List<String> warnings) {
+        for (String warning : warnings) {
+            LOG.warn("Save warning: {}", warning);
+        }
     }
 
     protected String getSaveFilename(int slot) {

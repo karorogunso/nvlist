@@ -1,11 +1,12 @@
 package nl.weeaboo.vn.script;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Interface for scheduling pieces of code to run on the main thread of a script context.
  */
-public interface IScriptEventDispatcher {
+public interface IScriptEventDispatcher extends Serializable {
 
 	/**
 	 * Enqueues an event
@@ -23,21 +24,12 @@ public interface IScriptEventDispatcher {
 	public void addTask(IScriptFunction task, double priority);
 
 	/**
-	 * Cancels an active task.
-	 * @return {@code true} if the task was found and removed, {@code false} otherwise.
-	 * @see #addTask(IScriptFunction, double)
-	 */
-	public boolean removeTask(IScriptFunction task);
-
-	/**
-	 * Removes all enqueued events
-	 */
-	public void clear();
-
-	/**
-	 * @return {@code true} if no events are currently enqueued
-	 */
-	public boolean isEmpty();
+     * Cancels all active tasks for the given script function.
+     *
+     * @return {@code true} if the task was found and removed, {@code false} otherwise.
+     * @see #addTask(IScriptFunction, double)
+     */
+    public boolean removeTask(IScriptFunction function);
 
 	/**
 	 * This method should be called once every frame.

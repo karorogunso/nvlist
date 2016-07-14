@@ -10,7 +10,7 @@ import java.util.List;
 import nl.weeaboo.vn.script.IScriptEventDispatcher;
 import nl.weeaboo.vn.script.IScriptFunction;
 
-public class ScriptEventDispatcher implements IScriptEventDispatcher, Serializable {
+public class ScriptEventDispatcher implements IScriptEventDispatcher {
 
 	private static final long serialVersionUID = ScriptImpl.serialVersionUID;
 
@@ -37,24 +37,15 @@ public class ScriptEventDispatcher implements IScriptEventDispatcher, Serializab
 
 	@Override
 	public boolean removeTask(IScriptFunction func) {
+        boolean removed = false;
 		for (Iterator<Task> itr = tasks.iterator(); itr.hasNext(); ) {
 			Task task = itr.next();
 			if (task.matches(func)) {
 				itr.remove();
-				return true;
+                removed = true;
 			}
 		}
-		return false;
-	}
-
-	@Override
-	public void clear() {
-		events.clear();
-	}
-
-	@Override
-	public boolean isEmpty() {
-		return events.isEmpty();
+        return removed;
 	}
 
 	private void sortTasks() {
@@ -102,9 +93,11 @@ public class ScriptEventDispatcher implements IScriptEventDispatcher, Serializab
 
 	}
 
-	private static class TaskSorter implements Comparator<Task> {
+    private static class TaskSorter implements Comparator<Task>, Serializable {
 
-		@Override
+        private static final long serialVersionUID = 1L;
+
+        @Override
 		public int compare(Task a, Task b) {
 			return Double.compare(b.priority, a.priority); // Descending (reverse) order
 		}

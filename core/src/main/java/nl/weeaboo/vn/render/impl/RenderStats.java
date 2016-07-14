@@ -3,10 +3,13 @@ package nl.weeaboo.vn.render.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Joiner;
 
 import nl.weeaboo.common.StringUtil;
 
@@ -23,7 +26,6 @@ public class RenderStats {
 		quadBatchSizes = new ArrayList<Integer>();
 	}
 
-	//Functions
 	public void startRender() {
 	}
 	public void stopRender() {
@@ -59,14 +61,8 @@ public class RenderStats {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder("[Render Stats]");
-		for (int n = 0; n < cmdStats.length; n++) {
-			if (cmdStats[n] != null) {
-				if (sb.length() > 0) sb.append("\n  ");
-
-				sb.append(cmdStats[n].toString());
-			}
-		}
+        StringBuilder sb = new StringBuilder("[Render Stats]\n");
+        Joiner.on('\n').skipNulls().appendTo(sb, cmdStats);
 
 		sb.append("\nQuad Render Batches:");
 		for (int i : quadBatchSizes) {
@@ -76,14 +72,9 @@ public class RenderStats {
 		return sb.toString();
 	}
 
-	//Getters
-
-	//Setters
-
-	//Inner Classes
 	private static class CommandStats {
 
-		private String label;
+        private final String label;
 
 		private int count;
 		private long durationNanos;
@@ -102,12 +93,8 @@ public class RenderStats {
 
 		@Override
 		public String toString() {
-			String idPrefix = "";
-			if (label != null) {
-				idPrefix = label + " ";
-			}
-
-			return String.format("%s[%03dx] %s", idPrefix, count, StringUtil.formatTime(durationNanos, TimeUnit.NANOSECONDS));
+            return String.format(Locale.ROOT, "%s[%03dx] %s", label, count,
+                    StringUtil.formatTime(durationNanos, TimeUnit.NANOSECONDS));
 		}
 	}
 

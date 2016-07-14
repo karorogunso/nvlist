@@ -23,7 +23,7 @@ public final class RenderUtil {
 
     /**
      * Returns a subrectangle of the given base UV area
-     * 
+     *
      * @param baseUV The base UV rectangle.
      * @param uv The relative sub-rectangle within the base UV area.
      */
@@ -77,11 +77,29 @@ public final class RenderUtil {
         return (a<<24)|(r<<16)|(g<<8)|(b);
     }
 
+    /**
+     * Converts AARRGGBB to AABBGGRR
+     */
     public static int toABGR(int argb) {
         return (argb&0xFF000000) | ((argb<<16)&0xFF0000) | (argb&0xFF00) | ((argb>>16)&0xFF);
     }
+
+    /**
+     * Converts AARRGGBB to RRGGBBAA
+     */
+    public static int toRGBA(int argb) {
+        return ((argb<<8) & 0xFFFFFF00) | ((argb>>24) & 0xFF);
+    }
     public static int toARGB(int abgr) {
         return (abgr&0xFF000000) | ((abgr<<16)&0xFF0000) | (abgr&0xFF00) | ((abgr>>16)&0xFF);
+    }
+
+    public static int packRGBAtoARGB(double r, double g, double b, double a) {
+        int ri = Math.max(0, Math.min(255, (int)Math.round(r * 255)));
+        int gi = Math.max(0, Math.min(255, (int)Math.round(g * 255)));
+        int bi = Math.max(0, Math.min(255, (int)Math.round(b * 255)));
+        int ai = Math.max(0, Math.min(255, (int)Math.round(a * 255)));
+        return (ai << 24) | (ri << 16) | (gi << 8) | (bi);
     }
 
 }

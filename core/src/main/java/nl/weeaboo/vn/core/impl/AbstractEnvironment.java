@@ -30,13 +30,14 @@ abstract class AbstractEnvironment implements IEnvironment {
         return StaticEnvironment.NOTIFIER.get();
     }
 
-    private static IPreferenceStore getPrefs() {
+    @Override
+    public IPreferenceStore getPrefStore() {
         return StaticEnvironment.PREFS.get();
     }
 
     @Override
     public <T> T getPref(Preference<T> pref) {
-        return getPrefs().get(pref);
+        return getPrefStore().get(pref);
     }
 
     @Override
@@ -51,7 +52,13 @@ abstract class AbstractEnvironment implements IEnvironment {
 
     @Override
     public Collection<IModule> getModules() {
-        return Arrays.asList(getImageModule(), getSoundModule(), getVideoModule(), getSaveModule());
+        return Arrays.asList(
+            getImageModule(),
+            getSoundModule(),
+            getVideoModule(),
+            getTextModule(),
+            getSystemModule(),
+            getSaveModule()); // Destroy save module last, so other modules can still save during destroy()
     }
 
 }

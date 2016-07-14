@@ -1,7 +1,6 @@
 package nl.weeaboo.vn.core.impl;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -11,45 +10,56 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import nl.weeaboo.common.Checks;
+import nl.weeaboo.io.Filenames;
 import nl.weeaboo.vn.core.IResourceLoadLog;
+import nl.weeaboo.vn.core.IResourceResolver;
+import nl.weeaboo.vn.core.MediaType;
+import nl.weeaboo.vn.core.ResourceId;
 import nl.weeaboo.vn.core.ResourceLoadInfo;
 
-public abstract class ResourceLoader implements Serializable {
+public abstract class ResourceLoader implements IResourceResolver {
 
     private static final long serialVersionUID = CoreImpl.serialVersionUID;
 
     private static final Logger LOG = LoggerFactory.getLogger(ResourceLoader.class);
 
+    private final MediaType mediaType;
     private final IResourceLoadLog resourceLoadLog;
     private final LruSet<String> checkedFilenames;
 
     private String[] autoFileExts = new String[0];
-    private boolean checkFileExt;
+    private boolean checkFileExt = true;
 
-    public ResourceLoader(IResourceLoadLog resourceLoadLog) {
+    public ResourceLoader(MediaType mediaType, IResourceLoadLog resourceLoadLog) {
+        this.mediaType = Checks.checkNotNull(mediaType);
         this.resourceLoadLog = Checks.checkNotNull(resourceLoadLog);
         this.checkedFilenames = new LruSet<String>(128);
     }
 
-    //Functions
     protected String replaceExt(String filename, String ext) {
-        return CoreImpl.replaceExt(filename, ext);
+        int index = filename.indexOf('#');
+        if (index < 0) {
+            return Filenames.replaceExt(filename, ext);
+        }
+        return Filenames.replaceExt(filename.substring(0, index), ext) + filename.substring(index);
     }
 
-    public String normalizeFilename(String filename) {
-        if (filename == null) return null;
+    @Override
+    public ResourceId resolveResource(String filename) {
+        if (filename == null) {
+            return null;
+        }
 
         if (isValidFilename(filename)) {
-            return filename; //The given extension works
+            return new ResourceId(mediaType, filename); // The given extension works
         }
 
         for (String ext : autoFileExts) {
             String fn = replaceExt(filename, ext);
             if (isValidFilename(fn)) {
-                return fn; //This extension works
+                return new ResourceId(mediaType, fn); // This extension works
             }
         }
-
         return null;
     }
 
@@ -62,13 +72,19 @@ public abstract class ResourceLoader implements Serializable {
             return;
         }
 
+        // If the file has an extension, isn't valid, but would be valid with a different extension...
+        if (!Filenames.getExtension(filename).isEmpty() && !isValidFilename(filename)) {
+            ResourceId resourceId = resolveResource(filename);
+            if (resourceId != null && isValidFilename(resourceId.getCanonicalFilename())) {
+                LOG.warn("Incorrect file extension: {}", filename);
+            }
+        }
+
         //Check if a file extension in the default list has been specified.
         for (String ext : autoFileExts) {
             if (filename.endsWith("." + ext)) {
                 if (isValidFilename(filename)) {
-                    LOG.debug("You don't need to specify the file extension: " + filename);
-                } else if (isValidFilename(normalizeFilename(filename))) {
-                    LOG.warn("Incorrect file extension: " + filename);
+                    LOG.debug("You don't need to specify the file extension: {}", filename);
                 }
                 break;
             }
@@ -84,28 +100,27 @@ public abstract class ResourceLoader implements Serializable {
             checkRedundantFileExt(filename);
         }
 
-        String normalized = normalizeFilename(filename);
-        if (normalized != null) {
-            preloadNormalized(normalized);
+        ResourceId resourceId = resolveResource(filename);
+        if (resourceId != null) {
+            preloadNormalized(resourceId);
         }
     }
 
     /**
-     * @param normalizedFilename The normalized filename of the resource to preload.
+     * @param resourceId Canonical identifier of the resource to preload.
      */
-    protected void preloadNormalized(String normalizedFilename) {
+    protected void preloadNormalized(ResourceId resourceId) {
         // Default implementation does nothing
     }
 
-    public void logLoad(ResourceLoadInfo info) {
-        resourceLoadLog.logLoad(info);
+    public void logLoad(ResourceId resourceId, ResourceLoadInfo info) {
+        resourceLoadLog.logLoad(resourceId, info);
     }
 
-    //Getters
     /**
-     * @param normalizedFilename A normalized filename
+     * @param filename A normalized filename
      */
-    protected abstract boolean isValidFilename(String normalizedFilename);
+    protected abstract boolean isValidFilename(String filename);
 
     public Collection<String> getMediaFiles(String folder) {
         try {
@@ -118,14 +133,13 @@ public abstract class ResourceLoader implements Serializable {
             }
             return filtered;
         } catch (IOException ioe) {
-            LOG.warn("Folder doesn't exist or can't be read: " + folder, ioe);
+            LOG.warn("Folder doesn't exist or can't be read: {}", folder, ioe);
             return Collections.emptyList();
         }
     }
 
     protected abstract List<String> getFiles(String folder) throws IOException;
 
-    //Setters
     public void setAutoFileExts(String... exts) {
         autoFileExts = exts.clone();
     }

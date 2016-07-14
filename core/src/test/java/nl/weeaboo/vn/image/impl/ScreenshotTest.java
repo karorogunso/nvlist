@@ -8,19 +8,15 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import nl.weeaboo.common.Dim;
-import nl.weeaboo.entity.Scene;
-import nl.weeaboo.entity.World;
-import nl.weeaboo.vn.NvlTestUtil;
-import nl.weeaboo.vn.core.ILayer;
-import nl.weeaboo.vn.core.impl.BasicPartRegistry;
-import nl.weeaboo.vn.core.impl.Screen;
+import nl.weeaboo.vn.CoreTestUtil;
 import nl.weeaboo.vn.image.IScreenshotBuffer;
 import nl.weeaboo.vn.image.ITextureData;
 import nl.weeaboo.vn.render.impl.DrawBuffer;
 import nl.weeaboo.vn.render.impl.LayerRenderCommand;
 import nl.weeaboo.vn.render.impl.RenderCommand;
 import nl.weeaboo.vn.render.impl.ScreenshotRenderCommand;
-import nl.weeaboo.vn.render.impl.WritableScreenshot;
+import nl.weeaboo.vn.scene.ILayer;
+import nl.weeaboo.vn.scene.impl.Screen;
 
 public class ScreenshotTest {
 
@@ -48,11 +44,11 @@ public class ScreenshotTest {
 		PixelTextureData pixels = TestImageUtil.newTestTextureData(w, h);
 
 		WritableScreenshot s = new WritableScreenshot((short)0, false);
-		s.setPixels(pixels, new Dim(w, h));
+		s.setPixels(pixels, Dim.of(w, h));
 		TestImageUtil.assertEquals(pixels, s.getPixels());
 
 		s = new WritableScreenshot((short)0, true);
-		s.setPixels(pixels, new Dim(w, h));
+		s.setPixels(pixels, Dim.of(w, h));
         TestImageUtil.assertEquals(pixels, s.getPixels());
 	}
 
@@ -74,11 +70,7 @@ public class ScreenshotTest {
 
 	@Test
 	public void screenshotBuffer() {
-		BasicPartRegistry pr = new BasicPartRegistry();
-		World world = new World(pr);
-		Scene scene = world.createScene();
-
-        Screen screen = NvlTestUtil.newScreen(pr, scene);
+        Screen screen = CoreTestUtil.newScreen();
 		ILayer root = screen.getRootLayer();
 
 		WritableScreenshot s = new WritableScreenshot((short)0, false);
@@ -86,7 +78,7 @@ public class ScreenshotTest {
 		IScreenshotBuffer ssb = root.getScreenshotBuffer();
 		ssb.add(s, false);
 
-		DrawBuffer buf = new DrawBuffer(pr);
+        DrawBuffer buf = new DrawBuffer();
 		screen.draw(buf);
 		Assert.assertTrue(ssb.isEmpty()); // Screenshot buffer empties into the draw buffer
 

@@ -4,6 +4,6 @@ import java.io.Serializable;
 
 public interface IResourceLoadLog extends Serializable {
 
-    void logLoad(ResourceLoadInfo info);
+    void logLoad(ResourceId resourceId, ResourceLoadInfo info);
 
 }

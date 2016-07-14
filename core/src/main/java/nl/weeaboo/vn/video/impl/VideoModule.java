@@ -11,9 +11,9 @@ import com.google.common.base.Preconditions;
 import nl.weeaboo.common.Dim;
 import nl.weeaboo.vn.core.IEnvironment;
 import nl.weeaboo.vn.core.IRenderEnv;
+import nl.weeaboo.vn.core.ResourceId;
 import nl.weeaboo.vn.core.ResourceLoadInfo;
 import nl.weeaboo.vn.core.impl.DefaultEnvironment;
-import nl.weeaboo.vn.core.impl.EntityHelper;
 import nl.weeaboo.vn.video.IVideo;
 import nl.weeaboo.vn.video.IVideoModule;
 
@@ -26,7 +26,6 @@ public class VideoModule implements IVideoModule {
 
     protected final IEnvironment env;
     protected final VideoResourceLoader resourceLoader;
-    protected final EntityHelper entityHelper;
 
     private IVideo fullscreenMovie;
     private String videoFolder = DEFAULT_VIDEO_FOLDER;
@@ -38,7 +37,6 @@ public class VideoModule implements IVideoModule {
     public VideoModule(DefaultEnvironment env, VideoResourceLoader resourceLoader) {
         this.env = env;
         this.resourceLoader = resourceLoader;
-        this.entityHelper = new EntityHelper(env.getPartRegistry());
 
         IRenderEnv renderEnv = env.getRenderEnv();
         videoResolution = renderEnv.getVirtualSize();
@@ -53,20 +51,52 @@ public class VideoModule implements IVideoModule {
     }
 
     @Override
+    public ResourceId resolveResource(String filename) {
+        return resourceLoader.resolveResource(filename);
+    }
+
+    @Override
     public IVideo movie(ResourceLoadInfo loadInfo) throws IOException {
+        checkIfMovieFinished();
+
     	Preconditions.checkState(fullscreenMovie == null, "A different movie is still playing");
 
-        LOG.info("Attempt to play movie: videoFolder=" + videoFolder + ", path=" + loadInfo.getFilename());
+        LOG.info("Attempt to play movie: videoFolder={}, path={}", videoFolder, loadInfo.getFilename());
 
-        // TODO LVN-021 Implement
-        // fullscreenMovie = ...
+        fullscreenMovie = createVideo(loadInfo);
 
         return fullscreenMovie;
     }
 
+    private IVideo createVideo(ResourceLoadInfo loadInfo) {
+        String filename = loadInfo.getFilename();
+        resourceLoader.checkRedundantFileExt(filename);
+
+        ResourceId resourceId = resourceLoader.resolveResource(filename);
+        if (resourceId == null) {
+            LOG.warn("Unable to find video file: {}", filename);
+            return null;
+        }
+
+        resourceLoader.logLoad(resourceId, loadInfo);
+
+        // Note: VideoAdapter currently
+        IRenderEnv renderEnv = env.getRenderEnv();
+        NativeVideo video = new NativeVideo(resourceLoader, resourceId.getCanonicalFilename(), renderEnv);
+        return new Video(resourceId.getCanonicalFilename(), video);
+
+    }
+
     @Override
     public IVideo getBlocking() {
+        checkIfMovieFinished();
         return fullscreenMovie;
+    }
+
+    private void checkIfMovieFinished() {
+        if (fullscreenMovie != null && fullscreenMovie.isStopped()) {
+            fullscreenMovie = null;
+        }
     }
 
     @Override

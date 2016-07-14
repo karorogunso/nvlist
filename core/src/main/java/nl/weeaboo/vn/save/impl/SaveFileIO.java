@@ -10,7 +10,6 @@ import nl.weeaboo.filesystem.ZipFileArchive;
 import nl.weeaboo.io.RandomAccessUtil;
 import nl.weeaboo.io.ZipUtil;
 import nl.weeaboo.io.ZipUtil.Compression;
-import nl.weeaboo.vn.core.impl.JsonUtil;
 
 final class SaveFileIO {
 
@@ -26,7 +25,7 @@ final class SaveFileIO {
     }
 
     public static String read(IFileSystem fs, String path) throws IOException {
-        return StringUtil.fromUTF8(readBytes(fs, path));
+        return FileSystemUtil.readString(fs, path);
     }
 
     public static byte[] readBytes(IFileSystem fs, String path) throws IOException {
@@ -47,7 +46,7 @@ final class SaveFileIO {
     }
 
     public static void writeBytes(ZipOutputStream zout, String path, byte[] fileData) throws IOException {
-        ZipUtil.writeFileEntry(zout, path, fileData, 0, fileData.length, Compression.NONE);
+        ZipUtil.writeFileEntry(zout, path, fileData, 0, fileData.length, Compression.DEFLATE);
     }
 
 }

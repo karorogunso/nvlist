@@ -3,10 +3,10 @@ package nl.weeaboo.vn.desktop;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.badlogic.gdx.Files.FileType;
 import com.badlogic.gdx.LifecycleListener;
-import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
-import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowAdapter;
 
 import nl.weeaboo.vn.Launcher;
 
@@ -14,16 +14,25 @@ public class DesktopLauncher {
 
     private static final Logger LOG = LoggerFactory.getLogger(DesktopLauncher.class);
 
-	public static void main (String[] arg) {
-		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-        config.title = "NVList";
-        config.width = 1280;
-        config.height = 720;
-        config.addIcon("icon128.png", FileType.Internal);
-        config.addIcon("icon32.png", FileType.Internal);
-        config.addIcon("icon16.png", FileType.Internal);
+    public static void main(String[] arg) {
+        Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
+        config.setTitle("NVList");
+        config.setWindowedMode(1280, 720);
 
-        LwjglApplication app = new LwjglApplication(new Launcher(), config);
+        // TODO Icon support is not yet supported by LWJGL3 backend (2016-01-08)
+        // config.addIcon("icon128.png", FileType.Internal);
+        // config.addIcon("icon32.png", FileType.Internal);
+        // config.addIcon("icon16.png", FileType.Internal);
+
+        final Launcher launcher = new Launcher();
+        config.setWindowListener(new Lwjgl3WindowAdapter() {
+            @Override
+            public boolean closeRequested() {
+                return launcher.onCloseRequested();
+            }
+        });
+
+        Lwjgl3Application app = new Lwjgl3Application(launcher, config);
         app.addLifecycleListener(new LifecycleListener() {
 
             @Override

@@ -1,4 +1,12 @@
 
-include 'api', 'core', 'desktop', 'android', 'ios'
-include 'tcommon'
-include 'LuaJPP2'
+include 'nvlist-api'
+project(':nvlist-api').projectDir=new File('api')
+
+include 'nvlist-core'
+project(':nvlist-core').projectDir=new File('core')
+
+include 'nvlist-desktop'
+project(':nvlist-desktop').projectDir=new File('desktop')
+
+include 'nvlist-android'
+project(':nvlist-android').projectDir=new File('android')

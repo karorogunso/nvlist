@@ -1,5 +1,7 @@
 package nl.weeaboo.vn.image.impl;
 
+import java.util.Locale;
+
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
@@ -23,19 +25,19 @@ public class TextureAdapter implements ITexture {
 
 	@Override
 	public String toString() {
-		return "TextureAdapter(" + getHandle() + ")";
+		return String.format(Locale.ROOT,
+		        "TextureAdapter(%d, %.1fx%.1f)",
+		        getHandle(), getWidth(), getHeight());
 	}
 
 	protected int getHandle() {
-	    return getTexture().getTextureObjectHandle();
+	    Texture tex = getTexture();
+        return (tex != null ? tex.getTextureObjectHandle() : 0);
 	}
 
 	public Texture getTexture() {
 	    TextureRegion tr = getTextureRegion();
-	    if (tr == null) {
-	        return null;
-	    }
-		return tr.getTexture();
+        return (tr != null ? tr.getTexture() : null);
 	}
 
 	public TextureRegion getTextureRegion() {
@@ -76,21 +78,25 @@ public class TextureAdapter implements ITexture {
 
 	@Override
 	public double getWidth() {
-       TextureRegion tr = getTextureRegion();
-        if (tr == null) {
-            return 0.0;
-        }
-		return tr.getRegionWidth() * scaleX;
+        return getPixelWidth() * scaleX;
 	}
 
 	@Override
 	public double getHeight() {
-       TextureRegion tr = getTextureRegion();
-        if (tr == null) {
-            return 0.0;
-        }
-		return tr.getRegionHeight() * scaleY;
+        return getPixelHeight() * scaleY;
 	}
+
+    @Override
+    public int getPixelWidth() {
+        TextureRegion tr = getTextureRegion();
+        return (tr != null ? tr.getRegionWidth() : 0);
+    }
+
+    @Override
+    public int getPixelHeight() {
+        TextureRegion tr = getTextureRegion();
+        return (tr != null ? tr.getRegionHeight() : 0);
+    }
 
 	@Override
 	public double getScaleX() {

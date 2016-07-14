@@ -1,33 +1,51 @@
 package nl.weeaboo.vn.core.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
-import nl.weeaboo.entity.Entity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+
 import nl.weeaboo.vn.core.IContext;
 import nl.weeaboo.vn.core.IContextFactory;
 import nl.weeaboo.vn.core.IContextManager;
 import nl.weeaboo.vn.core.IRenderEnv;
 import nl.weeaboo.vn.render.IDrawBuffer;
+import nl.weeaboo.vn.script.IScriptFunction;
+import nl.weeaboo.vn.script.ScriptException;
+import nl.weeaboo.vn.script.impl.lua.LuaScriptUtil;
 
 public class ContextManager implements IContextManager {
 
     private static final long serialVersionUID = CoreImpl.serialVersionUID;
+    private static final Logger LOG = LoggerFactory.getLogger(ContextManager.class);
 
     private final IContextFactory<Context> contextFactory;
 
-    private final List<Context> contexts = new ArrayList<Context>();
+    private final DestructibleElemList<Context> contexts = new DestructibleElemList<Context>();
 
     public ContextManager(IContextFactory<Context> contextFactory) {
         this.contextFactory = contextFactory;
     }
 
-    //Functions
     @Override
     public final Context createContext() {
+        return createContext(null);
+    }
+
+    @Override
+    public final Context createContext(IScriptFunction func) {
         Context context = contextFactory.newContext();
+        if (func != null) {
+            try {
+                LuaScriptUtil.callFunction(context, func);
+            } catch (ScriptException e) {
+                LOG.warn("Exception while initializing new context", e);
+            }
+        }
+
         register(context);
         return context;
     }
@@ -66,21 +84,24 @@ public class ContextManager implements IContextManager {
         }
     }
 
-    //Getters
     @Override
     public Collection<Context> getContexts() {
-        return Collections.unmodifiableCollection(contexts);
+        return contexts.getSnapshot();
     }
 
     @Override
     public Collection<Context> getActiveContexts() {
-        List<Context> active = new ArrayList<Context>(2);
-        for (Context context : contexts) {
-            if (context.isActive()) {
-                active.add(context);
+        return contexts.getSnapshot(new Predicate<Context>() {
+            @Override
+            public boolean apply(Context context) {
+                return context.isActive();
             }
-        }
-        return Collections.unmodifiableCollection(active);
+        });
+    }
+
+    @Override
+    public IContext getPrimaryContext() {
+        return Iterables.get(getActiveContexts(), 0, null);
     }
 
     @Override
@@ -89,7 +110,6 @@ public class ContextManager implements IContextManager {
         return context.isActive();
     }
 
-    //Setters
     @Override
     public void setContextActive(IContext ctxt, boolean active) {
         Context context = checkContains(ctxt);
@@ -103,17 +123,6 @@ public class ContextManager implements IContextManager {
         for (IContext context : contexts) {
             context.setRenderEnv(env);
         }
-    }
-
-    @Override
-    public Entity findEntity(int entityId) {
-        for (IContext context : contexts) {
-            Entity e = context.findEntity(entityId);
-            if (e != null) {
-                return e;
-            }
-        }
-        return null;
     }
 
 }

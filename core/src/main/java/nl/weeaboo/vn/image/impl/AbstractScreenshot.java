@@ -20,7 +20,7 @@ public abstract class AbstractScreenshot implements IScreenshot {
 
 	private boolean cancelled;
 	private transient ITextureData pixels;
-	private Dim screenSize = new Dim(0, 0);
+	private Dim screenSize = Dim.EMPTY;
 
 	protected boolean isAvailable;
 	private boolean isTransient;
@@ -31,7 +31,6 @@ public abstract class AbstractScreenshot implements IScreenshot {
 		this.isTransient = isVolatile; // Volatile implies transient
 	}
 
-	//Functions
 	private void writeObject(ObjectOutputStream out) throws IOException {
 		out.defaultWriteObject();
 
@@ -72,7 +71,6 @@ public abstract class AbstractScreenshot implements IScreenshot {
 		cancelled = true;
 	}
 
-	//Getters
 	@Override
 	public boolean isAvailable() {
 		return !isCancelled() && isAvailable;
@@ -108,7 +106,6 @@ public abstract class AbstractScreenshot implements IScreenshot {
 	    return screenSize;
 	}
 
-	//Setters
 	protected void setPixels(ITextureData texData, Dim screenSize) {
 		this.pixels = Checks.checkNotNull(texData);
 		this.screenSize = Checks.checkNotNull(screenSize);
