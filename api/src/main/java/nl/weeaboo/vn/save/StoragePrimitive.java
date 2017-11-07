@@ -1,5 +1,7 @@
 package nl.weeaboo.vn.save;
 
+import javax.annotation.Nullable;
+
 import com.google.common.base.Objects;
 
 import nl.weeaboo.common.StringUtil;
@@ -27,7 +29,7 @@ public final class StoragePrimitive {
      * @return The JSON value converted to a {@link StoragePrimitive} object, or {@code null} if the JSON
      *         value couldn't be parsed.
      */
-    public static StoragePrimitive fromJson(String json) {
+    public static @Nullable StoragePrimitive fromJson(String json) {
         if (json == null || json.equals("undefined")) {
             return null;
         }
@@ -61,6 +63,9 @@ public final class StoragePrimitive {
         return new StoragePrimitive(unescapeString(json));
     }
 
+    /**
+     * @return A JSON representation of this object.
+     */
     public String toJson() {
         if (value instanceof String) {
             // string
@@ -85,10 +90,25 @@ public final class StoragePrimitive {
         return Objects.equal(value, p.value);
     }
 
+    /**
+     * @return A storage primitive representing a boolean value.
+     */
     public static StoragePrimitive fromBoolean(boolean value) {
         return new StoragePrimitive(value);
     }
 
+    /**
+     * @return {@code true} if this primitive contains a boolean.
+     */
+    public boolean isBoolean() {
+        return value instanceof Boolean;
+    }
+
+    /**
+     * Converts the primitive to a boolean value.
+     *
+     * @param defaultValue The value to return if the primitive can't be converted to a boolean.
+     */
     public boolean toBoolean(boolean defaultValue) {
         if (value instanceof Boolean) {
             return ((Boolean) value).booleanValue();
@@ -102,10 +122,25 @@ public final class StoragePrimitive {
         return defaultValue;
     }
 
+    /**
+     * @return A storage primitive representing a number.
+     */
     public static StoragePrimitive fromDouble(double value) {
         return new StoragePrimitive(value);
     }
 
+    /**
+     * @return {@code true} if this primitive contains a number.
+     */
+    public boolean isDouble() {
+        return value instanceof Number;
+    }
+
+    /**
+     * Converts the primitive to a number.
+     *
+     * @param defaultValue The value to return if the primitive can't be converted to a number.
+     */
     public double toDouble(double defaultValue) {
         if (value instanceof Number) {
             Number number = (Number) value;
@@ -120,8 +155,18 @@ public final class StoragePrimitive {
         return defaultValue;
     }
 
+    /**
+     * @return A storage primitive representing a string value.
+     */
     public static StoragePrimitive fromString(String value) {
         return new StoragePrimitive(value);
+    }
+
+    /**
+     * @return {@code true} if this primitive contains a string.
+     */
+    public boolean isString() {
+        return value instanceof String;
     }
 
     @Override
@@ -129,6 +174,11 @@ public final class StoragePrimitive {
         return toString("null");
     }
 
+    /**
+     * Converts the primitive to a string value.
+     *
+     * @param defaultValue The value to return if the primitive can't be converted to a string.
+     */
     public String toString(String defaultValue) {
         if (value instanceof Number) {
             // number

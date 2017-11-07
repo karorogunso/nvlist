@@ -4,7 +4,10 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.0'
+        // Plugin for making a 'fat' JAR
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+
+        classpath 'com.android.tools.build:gradle:2.2.2'
    }
 }
 
@@ -20,63 +23,65 @@ def loadProperties(String filename) {
     return props
 }
 
-// Standard folders
-def rootDir = new File(vnRoot).getCanonicalFile()
-def resDir = new File(rootDir, "/res")
-def buildResDir = new File(rootDir, "/build-res")
+logger.lifecycle("VN root parameter: " + vnRoot)
 
-logger.lifecycle("VN root folder: " + rootDir)
-logger.lifecycle("VN resource folder: " + resDir)
+// Standard folders
+allprojects {
+    ext {
+        vnRootDir = new File(vnRoot).getCanonicalFile()
+        vnResDir = new File(vnRootDir, "/res")
+        buildResDir = new File(vnRootDir, "/build-res")
+        buildToolsDir = rootProject.projectDir
+    }
+}
+
+logger.lifecycle("VN resource folder: " + vnResDir)
 logger.lifecycle("VN build-resource folder: " + buildResDir)
 
 // Load user-defined build.properties file
 def settings = loadProperties("${buildResDir}/build.properties")
 
 allprojects {
+    apply plugin: 'eclipse'
+    
+    group = settings.appPackage
     version = settings.appVersion
 
     ext {
         nvlistVersion = settings.nvlistVersion
+        javaVersion = JavaVersion.VERSION_1_8
     }
 
     repositories {
         jcenter()
         maven { url "https://dl.bintray.com/anonl/nvlist/" }
         maven { url "https://dl.bintray.com/anonl/gdx-styledtext/" }
+        maven { url "https://dl.bintray.com/anonl/gdx-video/" }
         maven { url "https://dl.bintray.com/anonl/luajpp2/" }
         maven { url "https://dl.bintray.com/anonl/tcommon/" }
     }
     
     plugins.withType(JavaPlugin) {
-        sourceCompatibility = 1.6
-        targetCompatibility = 1.6
+        sourceCompatibility = javaVersion
         compileJava.options.encoding = 'UTF-8'
         compileTestJava.options.encoding = 'UTF-8'
     }
 }
 
 project(':desktop') {
-    apply plugin: 'java'
+    apply from: "${buildToolsDir}/common-desktop.gradle"
 
     dependencies {
         compile "nl.weeaboo.vn:nvlist-desktop:$nvlistVersion"        
-    }
-    
-    project.ext.mainClassName = settings.desktopMain
+    }    
 
-    task run(dependsOn: classes, type: JavaExec) {
-        main = project.mainClassName
-        classpath = sourceSets.main.runtimeClasspath
-        standardInput = System.in
-        workingDir = rootDir
-        ignoreExitValue = true
-    }
+    mainClassName = settings.desktopMain
 }
 
 project(':android') {
     apply plugin: 'com.android.application'
 
-    configurations { natives }
+    apply from: "${buildToolsDir}/common-android.gradle"
 
     dependencies {
         compile("nl.weeaboo.vn:nvlist-android:$nvlistVersion@aar") {
@@ -85,58 +90,19 @@ project(':android') {
     }
     
     android {
-        buildToolsVersion '23.0.2'
-        compileSdkVersion 'android-23'
-        
-        sourceSets {
-            main {
-                manifest.srcFile 'AndroidManifest.xml'
-                java.srcDirs = ['src']
-                aidl.srcDirs = ['src']
-                renderscript.srcDirs = ['src']
-                res.srcDirs = ['res']
-                assets.srcDirs = [resDir]
-                jniLibs.srcDirs = ['libs']
-            }
-    
-            instrumentTest.setRoot('tests')
-        }
         defaultConfig {
-            minSdkVersion 8
-            targetSdkVersion 23
-            versionCode = settings.androidVersionCode as int
-            versionName = project.version
+            applicationId settings.appPackage
+            versionCode settings.androidVersionCode as int
+            versionName project.version
             manifestPlaceholders = [
                 androidMain: settings.androidMain
             ]
-        }
-        lintOptions {
-            textOutput 'stdout'
-            textReport true
-        }
-    }
-    
-    // Called every time Gradle gets executed: extracts natives to libs/ so they get packed with the APK.
-    task copyAndroidNatives() { 
-        file('libs/armeabi/').mkdirs();
-        file('libs/armeabi-v7a/').mkdirs();
-        file('libs/x86/').mkdirs();
-    
-        configurations.natives.files.each { jar ->
-            def outputDir = null
-            if (jar.name.endsWith('natives-armeabi-v7a.jar')) outputDir = file('libs/armeabi-v7a')
-            if (jar.name.endsWith('natives-armeabi.jar')) outputDir = file('libs/armeabi')
-            if (jar.name.endsWith('natives-x86.jar')) outputDir = file('libs/x86')
-            if (outputDir != null) {
-                copy {
-                    from zipTree(jar)
-                    into outputDir
-                    include '*.so'
-                }
+            jackOptions {
+               enabled true
             }
         }
     }
-    
+
     // Run installed app through adb
     task runInstalled(type: Exec) {
         def adb = android.getAdbExe()
@@ -149,5 +115,4 @@ project(':android') {
     // Install, then run release build
     task runRelease(dependsOn: ['installRelease', 'runInstalled']) {
     }    
-
 }

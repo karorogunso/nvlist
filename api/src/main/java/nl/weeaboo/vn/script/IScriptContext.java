@@ -11,16 +11,26 @@ import nl.weeaboo.vn.core.IContext;
  */
 public interface IScriptContext extends Serializable {
 
-    IScriptThread newThread(IScriptFunction func) throws ScriptException;
+    /**
+     * Creates a new thread and adds it to the script context.
+     * @throws ScriptException If thread creation fails.
+     */
+    IScriptThread createThread(IScriptFunction func) throws ScriptException;
 
+    /**
+     * Returns the main script thread.
+     */
     IScriptThread getMainThread();
 
+    /**
+     * Returns a read-only collection containing the currently registered script threads.
+     */
     Collection<? extends IScriptThread> getThreads();
 
-	/** Runs every active thread once until they yield. */
-    void updateThreads(IContext context);
+    /** Runs every active thread once until they yield. */
+    void updateThreads(IContext context, IScriptExceptionHandler exceptionHandler);
 
-	/** Returns the event dispatcher which can be used to schedule tasks on the context's main thread */
+    /** Returns the event dispatcher which can be used to schedule tasks on the context's main thread */
     IScriptEventDispatcher getEventDispatcher();
 
 }

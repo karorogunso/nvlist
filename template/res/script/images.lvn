@@ -1,0 +1,20 @@
+
+Image test script
+
+Showing sprite (left)
+@local alpha = imgf("testjng", "l")
+
+Showing sprite (right)
+@local beta = imgf("testjng", "r")
+
+Removing sprites...
+@rmf(alpha)
+@rmf(beta)
+
+Showing sub-rects
+@@
+local subA = imgf("test#a", 1280 - 128 * 4, 0)
+local subB = imgf("test#b", 1280 - 128 * 3, 0)
+local subC = imgf("test#c", 1280 - 128 * 2, 0)
+local subD = imgf("test#d", 1280 - 128 * 1, 0)
+@@

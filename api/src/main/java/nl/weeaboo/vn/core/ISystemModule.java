@@ -1,6 +1,6 @@
 package nl.weeaboo.vn.core;
 
-import nl.weeaboo.settings.IPreferenceStore;
+import nl.weeaboo.prefsstore.IPreferenceStore;
 
 /** Interface for interacting with hardware and external applications. */
 public interface ISystemModule extends IModule {
@@ -22,6 +22,8 @@ public interface ISystemModule extends IModule {
 
     /**
      * Clear all internal state and return to the titlescreen.
+     *
+     * @throws InitException If a fatal error occurs during initialization.
      */
     void restart() throws InitException;
 

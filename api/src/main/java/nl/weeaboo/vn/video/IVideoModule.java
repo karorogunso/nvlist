@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 import nl.weeaboo.common.Dim;
+import nl.weeaboo.filesystem.FilePath;
 import nl.weeaboo.vn.core.IModule;
 import nl.weeaboo.vn.core.IResourceResolver;
 import nl.weeaboo.vn.core.ResourceLoadInfo;
@@ -15,6 +16,7 @@ public interface IVideoModule extends IModule, IResourceResolver {
      *
      * @param loadInfo Filename of the requested resource and related metadata.
      * @return An {@link IVideo} object that can be used to control playback.
+     * @throws IOException If an I/O error occurs while opening the video file for reading.
      */
     IVideo movie(ResourceLoadInfo loadInfo) throws IOException;
 
@@ -27,11 +29,11 @@ public interface IVideoModule extends IModule, IResourceResolver {
     /**
      * Sets the resource folder that videos are loaded from.
      */
-    void setVideoFolder(String videoFolder, Dim size);
+    void setVideoFolder(FilePath videoFolder, Dim size);
 
     /**
      * Returns the paths for all video files in the specified folder and its sub-folders.
      */
-    Collection<String> getVideoFiles(String folder);
+    Collection<FilePath> getVideoFiles(FilePath folder);
 
 }

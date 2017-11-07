@@ -1,0 +1,18 @@
+
+// Apply ErrorProne plugin
+apply plugin: 'net.ltgt.errorprone'
+
+dependencies {
+    errorprone "com.google.errorprone:error_prone_core:$errorProneVersion"
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs += [
+        '-Werror',
+        
+        // '-Xep:FieldMissingNullable:WARN', // Check broken in errorprone-2.1.0
+        '-Xep:ParameterNotNullable:WARN',
+        '-Xep:ReturnMissingNullable:WARN',
+    ]
+}
+

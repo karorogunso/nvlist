@@ -4,10 +4,13 @@ import java.io.Serializable;
 
 public interface IContextListener extends Serializable {
 
-    public void onContextActivated(IContext context);
+    /** Called when a context becomes active. */
+    void onContextActivated(IContext context);
 
-    public void onContextDeactivated(IContext context);
+    /** Called when a context becomes no longer active. */
+    void onContextDeactivated(IContext context);
 
-    public void onContextDestroyed(IContext context);
+    /** Called when a context is destroyed. */
+    void onContextDestroyed(IContext context);
 
 }

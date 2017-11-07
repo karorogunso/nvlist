@@ -6,8 +6,8 @@ import nl.weeaboo.common.Insets2D;
 
 public interface INinePatch extends Serializable {
 
-    /** Named regions of the 9-patch */
-    public enum EArea {
+    /** Named regions of the 9-patch. */
+    public enum AreaId {
         TOP_LEFT,
         TOP,
         TOP_RIGHT,
@@ -17,6 +17,35 @@ public interface INinePatch extends Serializable {
         BOTTOM_LEFT,
         BOTTOM,
         BOTTOM_RIGHT;
+
+        /**
+         * @return {@code true} if this is one of the TOP directions.
+         */
+        public boolean isTop() {
+            return this == TOP_LEFT || this == TOP || this == TOP_RIGHT;
+        }
+
+        /**
+         * @return {@code true} if this is one of the RIGHT directions.
+         */
+        public boolean isRight() {
+            return this == TOP_RIGHT || this == RIGHT || this == BOTTOM_RIGHT;
+        }
+
+        /**
+         * @return {@code true} if this is one of the BOTTOM directions.
+         */
+        public boolean isBottom() {
+            return this == BOTTOM_LEFT || this == BOTTOM || this == BOTTOM_RIGHT;
+        }
+
+        /**
+         * @return {@code true} if this is one of the LEFT directions.
+         */
+        public boolean isLeft() {
+            return this == TOP_LEFT || this == LEFT || this == BOTTOM_LEFT;
+        }
+
     }
 
     /**
@@ -29,18 +58,18 @@ public interface INinePatch extends Serializable {
      */
     double getNativeHeight();
 
-    /** @return The current texture for the requested region */
-    ITexture getTexture(EArea area);
+    /** Returns the current texture for the requested region. */
+    ITexture getTexture(AreaId area);
 
-    /** Sets the texture of the specified region */
-    void setTexture(EArea area, ITexture texture);
+    /** Sets the texture of the specified region. */
+    void setTexture(AreaId area, ITexture texture);
 
-    /** @see #setInsets(Insets2D) */
+    /** Returns the amount of non-resizable space on the top/right/bottom/left of the 9-patch. */
     Insets2D getInsets();
 
-    /** Sets the amount of non-resizable space on the top/right/bottom/left of the 9-patch */
+    /** Sets the amount of non-resizable space on the top/right/bottom/left of the 9-patch. */
     void setInsets(Insets2D i);
 
-    /** Copies all attributes from the other ninepatch to this ninepatch */
+    /** Copies all attributes from the other ninepatch to this ninepatch. */
     void set(INinePatch other);
 }

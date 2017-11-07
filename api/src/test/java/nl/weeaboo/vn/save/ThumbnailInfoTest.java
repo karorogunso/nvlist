@@ -4,25 +4,28 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import nl.weeaboo.common.Dim;
+import nl.weeaboo.filesystem.FilePath;
 
 public class ThumbnailInfoTest {
 
+    private static final FilePath PATH = FilePath.of("path");
+
     @Test
     public void validArgs() {
-        ThumbnailInfo info = new ThumbnailInfo("path", Dim.of(23, 45));
-        Assert.assertEquals("path", info.getPath());
+        ThumbnailInfo info = new ThumbnailInfo(PATH, Dim.of(23, 45));
+        Assert.assertEquals(FilePath.of("path"), info.getPath());
         Assert.assertEquals(Dim.of(23, 45), info.getImageSize());
     }
 
     @Test
     public void invalidArgs() {
         assertInvalidArg(null, Dim.of(23, 45));
-        assertInvalidArg("path", null);
-        assertInvalidArg("path", Dim.of(0, 45));
-        assertInvalidArg("path", Dim.of(23, 0));
+        assertInvalidArg(PATH, null);
+        assertInvalidArg(PATH, Dim.of(0, 45));
+        assertInvalidArg(PATH, Dim.of(23, 0));
     }
 
-    private void assertInvalidArg(String path, Dim imageSize) {
+    private void assertInvalidArg(FilePath path, Dim imageSize) {
         try {
             ThumbnailInfo info = new ThumbnailInfo(path, imageSize);
             Assert.fail("Expected exception, got object: " + info);

@@ -1,28 +1,37 @@
 
-project.ext.mainClassName = "nl.weeaboo.vn.desktop.DesktopLauncher"
+apply from: "${buildToolsDir}/common-desktop.gradle"
 
-test {
-    workingDir = project.vnRootDir
+apply plugin: 'maven-publish'
+
+dependencies {
+    compile project(":nvlist-core")
+    compile "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
+    compile "com.badlogicgames.gdx:gdx-controllers-desktop:$gdxVersion"
+    compile "com.badlogicgames.gdx:gdx-controllers-lwjgl3:$gdxVersion"
+    compile "net.sf.jopt-simple:jopt-simple:$joptVersion"
+    
+    runtime "org.slf4j:slf4j-jdk14:$slf4jVersion"
+    runtime "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+    runtime "com.badlogicgames.gdx:gdx-controllers-platform:$gdxVersion:natives-desktop"
+    runtime "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
+    runtime "nl.weeaboo.gdx.video:gdx-video-desktop:$gdxVideoVersion"
+    runtime "nl.weeaboo.gdx.video:gdx-video-desktop-natives:$gdxVideoVersion"
 }
 
-task run(dependsOn: classes, type: JavaExec) {
-    main = project.mainClassName
-    classpath = sourceSets.main.runtimeClasspath
-    standardInput = System.in
-    workingDir = project.vnRootDir
-    ignoreExitValue = true
-}
+publishing {
+    publications {
+        desktop(MavenPublication) {
+            from components.java
+            artifactId 'nvlist-desktop'
 
-eclipse {
-    project {
-        linkedResource name: 'assets', type: '2', location: 'PARENT-1-PROJECT_LOC/template'
+            pom.withXml {
+                asNode().children().last() + pomLicenseConfig
+            }  
+        }
     }
-    classpath {
-        file {
-            withXml {
-                def node = it.asNode()
-                node.appendNode('classpathentry', [kind: 'src', path: 'assets', including: 'res/**'])
-            }
-        }    
-    }
 }
+
+bintray {
+    publications = ['desktop']
+}
+

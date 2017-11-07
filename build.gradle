@@ -2,249 +2,180 @@
 buildscript {
     repositories {
         jcenter()
-        mavenCentral()
-        maven { url 'https://oss.sonatype.org/content/repositories/releases' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.0'
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
-        classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.0.8'
+        // Plugins for Android
+        classpath 'com.android.tools.build:gradle:2.3.3'        
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'        
+
+        // Plugins for iOS
+        classpath 'com.mobidevelop.robovm:robovm-gradle-plugin:2.3.2'
     }
 }
 
 plugins {
-    id "com.jfrog.bintray" version "1.6"
+    // Plugin for uploading to bintray
+    // Note: Causes a classpath conflict for org.apache.tools.zip
+    id 'com.jfrog.bintray' version '1.7.3'
+    
+    // Google error-prone
+    id 'net.ltgt.errorprone' version '0.0.11' apply false
+    
+    // Plugin used for reporting on the licenses of third-part licenses
+    id 'com.github.hierynomus.license' version '0.13.1'
+    
+    // Java Microbenchmark Harness plugin
+    id 'me.champeau.gradle.jmh' version '0.4.3' apply false
+    
+    // Plugin for making a 'fat' JAR
+    id 'com.github.johnrengelman.shadow' version '1.2.4'
+    
+    // Public API change detection
+    id 'me.champeau.gradle.japicmp' version '0.2.5'    
 }
 
-def templateDir = project.file("template").getAbsoluteFile()
+def templateDir = file('template').getAbsoluteFile()
 
 allprojects {
-    apply plugin: "eclipse"
-    apply plugin: 'net.ltgt.errorprone'
+    apply plugin: 'eclipse'
+    apply plugin: 'jacoco'
+    apply plugin: 'com.jfrog.bintray'
 
     group = 'nl.weeaboo.vn'
-    version = '4.0.0-alpha9'
+    version = '4.0.0-alpha11'
     ext {
-        appName = 'NVList'
+        javaVersion = JavaVersion.VERSION_1_8
         
-        gdxVersion = '1.9.3'
-        gdxVideoVersion = '0.0.2-anonl'
+        gdxTestVersion = '2.0.0'
+        gdxVersion = '1.9.6'
+        gdxVideoVersion = '1.0.0-anonl'
+        guavaVersion = '20.0' // v21 isn't compatible with Android/Java6
+        javaxAnnotationVersion = '3.0.1'
+        errorProneVersion = '2.1.0'
+        joptVersion = '5.0.3'
         junitVersion = '4.12'
+        luajpp2Version = '2.3.15'
+        roboVmVersion = '2.3.0'
         slf4jVersion = '1.7.21'
-        guavaVersion = '19.0'
-        errorProneVersion = '2.0.9'
-        
-        styledTextVersion = '1.5.0'
-        luajpp2Version = '2.3.10'
-        tcommonVersion = '1.1.1'
+        styledTextVersion = '2.0.1'
+        tcommonVersion = '2.3.1'
+        gradleToolingApiVersion = '4.0'
+        // Note: Update ./template/build-tools/NOTICE when adding runtime third-party dependencies
         
         vnRootDir = templateDir
-        vnResDir = new File(vnRootDir, "res")
+        vnResDir = new File(vnRootDir, 'res')
+        buildToolsDir = new File(templateDir, 'build-tools') 
+        
+	    pomLicenseConfig = {
+	       licenses {
+	            license {
+	                name 'The Apache Software License, Version 2.0'
+	                url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+	                distribution 'repo'
+	            }
+	        }
+	    }
+	    pomLicenseConfig.resolveStrategy = Closure.DELEGATE_ONLY // Otherwise 'license' elem is missing
     }
 
     repositories {
+        mavenLocal()
         jcenter()
-        maven { url "https://dl.bintray.com/anonl/gdx-styledtext/" }
-        maven { url "https://dl.bintray.com/anonl/gdx-video/" }
-        maven { url "https://dl.bintray.com/anonl/luajpp2/" }
-        maven { url "https://dl.bintray.com/anonl/tcommon/" }
+        maven { url 'https://dl.bintray.com/anonl/gdx/' }
+        maven { url 'https://dl.bintray.com/anonl/gdx-styledtext/' }
+        maven { url 'https://dl.bintray.com/anonl/gdx-video/' }
+        maven { url 'https://dl.bintray.com/anonl/luajpp2/' }
+        maven { url 'https://dl.bintray.com/anonl/tcommon/' }
     }
-    
+
     plugins.withType(JavaPlugin) {
-        sourceCompatibility = 1.6
-        targetCompatibility = 1.6
-        compileJava.options.encoding = 'UTF-8'
-        compileTestJava.options.encoding = 'UTF-8'        
-    }
-    
-    dependencies {
-        errorprone "com.google.errorprone:error_prone_core:$errorProneVersion"
-    }
-    
-    configurations.errorprone {
-        resolutionStrategy.force 'com.google.errorprone:error_prone_core:2.0.9'
-    }    
-}
-
-project(':nvlist-api') {
-    apply plugin: 'java'
-    
-    dependencies {
-        compile "nl.weeaboo.common:tcommon-core:$tcommonVersion"
-        compile "nl.weeaboo.common:tcommon-logging:$tcommonVersion"
-        compile "nl.weeaboo.gdx-styledtext:styledtext-api:$styledTextVersion"
-        compile "com.google.guava:guava:$guavaVersion"
+        sourceCompatibility = javaVersion
         
-        testCompile "junit:junit:$junitVersion"
-    }
-}
-
-project(':nvlist-core') {
-    apply plugin: 'java'
-
-    dependencies {
-        compile project(":nvlist-api")
-        compile "nl.weeaboo.luajpp2:luajpp2-core:$luajpp2Version"
-        compile "nl.weeaboo.gdx-styledtext:styledtext-impl:$styledTextVersion"
-        compile "org.slf4j:slf4j-api:$slf4jVersion"
-        
-        compile "com.badlogicgames.gdx:gdx:$gdxVersion"        
-        compile "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"        
-        compile "com.badlogicgames.gdx:gdx-jnigen:$gdxVersion"        
-        compile "nl.weeaboo.gdx.video:gdx-video:$gdxVideoVersion:"
-    
-        testCompile "junit:junit:$junitVersion"
-        testCompile "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
-        testRuntime "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
-        testRuntime "org.slf4j:slf4j-jdk14:$slf4jVersion"
-    }
-}
-
-project(':nvlist-desktop') {
-    apply plugin: 'java'
-
-    dependencies {
-        compile project(":nvlist-core")
-        compile "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-controllers-desktop:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-controllers-lwjgl3:$gdxVersion"
-        
-        runtime "org.slf4j:slf4j-jdk14:$slf4jVersion"
-        runtime "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
-        runtime "com.badlogicgames.gdx:gdx-controllers-platform:$gdxVersion:natives-desktop"
-        runtime "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
-        runtime "nl.weeaboo.gdx.video:gdx-video-desktop:$gdxVideoVersion"
-        runtime "nl.weeaboo.gdx.video:gdx-video-desktop-natives:$gdxVideoVersion"
-        
-        testCompile "junit:junit:$junitVersion"
-    }
-}
-
-project(':nvlist-android') {
-    // apply plugin: 'com.android.library'
-    apply plugin: 'com.android.application'
-    apply plugin: 'com.github.dcendents.android-maven'
-
-    configurations { natives }
-
-    dependencies {
-        compile project(":nvlist-api")
-        compile(project(":nvlist-core")) {
-            exclude group: "com.badlogicgames.gdx", module: "gdx-backend-headless"
-            exclude group: "com.badlogicgames.gdx", module: "gdx-platform"
+        tasks.withType(JavaCompile) {
+            options.encoding = 'UTF-8'
         }
-        compile "nl.weeaboo.common:tcommon-core:$tcommonVersion"
-        compile "nl.weeaboo.luajpp2:luajpp2-core:$luajpp2Version"
-        compile "nl.weeaboo.gdx-styledtext:styledtext-api:$styledTextVersion"
-        compile "nl.weeaboo.gdx-styledtext:styledtext-impl:$styledTextVersion"
-        compile "org.slf4j:slf4j-api:$slf4jVersion"
-        compile "org.slf4j:slf4j-android:$slf4jVersion"
-        compile "com.google.guava:guava:$guavaVersion"
-    
-        compile "com.badlogicgames.gdx:gdx:$gdxVersion"        
-        compile "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
-        compile "nl.weeaboo.gdx.video:gdx-video-android:$gdxVideoVersion"
-        
-        compile "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
-        natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-controllers-android:$gdxVersion"
-        natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion"
-    }
-    
-    android {
-        buildToolsVersion '23.0.2'
-        compileSdkVersion 'android-23'
-        
+
         sourceSets {
             main {
-                manifest.srcFile 'AndroidManifest.xml'
-                java.srcDirs = ['src']
-                aidl.srcDirs = ['src']
-                renderscript.srcDirs = ['src']
-                res.srcDirs = ['res']
-                assets.srcDirs = ['template/res']
-                jniLibs.srcDirs = ['libs']
-            }
-    
-            instrumentTest.setRoot('tests')
-        }
-        compileOptions {
-            sourceCompatibility JavaVersion.VERSION_1_6
-            targetCompatibility JavaVersion.VERSION_1_6
-        }    
-        defaultConfig {
-            minSdkVersion 8
-            targetSdkVersion 23
-        }
-        lintOptions {
-            textOutput 'stdout'
-            textReport true
-        }
-    }
-}
-
-apply plugin: 'maven-publish'
-
-publishing {
-    publications {
-        api(MavenPublication) {
-            from project(':nvlist-api').components.java
-            artifactId 'nvlist-api'
-        }
-        core(MavenPublication) {
-            from project(':nvlist-core').components.java
-            artifactId 'nvlist-core'
-        }
-        desktop(MavenPublication) {
-            from project(':nvlist-desktop').components.java
-            artifactId 'nvlist-desktop'
-        }
-        android(MavenPublication) {
-            def androidProj = project(':nvlist-android')
-            def configs = androidProj.configurations
-            
-            // Manually configure artifact and dependencies (Android plugin doesn't supply a component)
-            artifact "${androidProj.buildDir}/outputs/aar/${androidProj.name}-release.aar"            
-
-            // Gather dependencies
-            def projectDeps = []
-            projectDeps += configs.runtime.getResolvedConfiguration().getFirstLevelModuleDependencies()
-            projectDeps += configs.natives.getResolvedConfiguration().getFirstLevelModuleDependencies()
-            
-            pom.withXml {
-                def depsNode = asNode().appendNode('dependencies')
-                projectDeps.each {
-                    def depNode = depsNode.appendNode('dependency')
-                    depNode.appendNode('groupId', it.moduleGroup)
-                    depNode.appendNode('artifactId', it.moduleName)
-                    depNode.appendNode('version', it.moduleVersion)
+                resources {
+                    // Add additional resource dir for .lua/.lvn scripts
+                    srcDirs 'src/main/lua'
                 }
             }
+            test {
+                resources {
+                    // Add additional resource dir for .lua/.lvn scripts
+                    srcDirs 'src/test/lua'
+                }
+            }
+        }
+
+        dependencies {
+            testCompile "junit:junit:$junitVersion"
+            testCompile "com.google.guava:guava-testlib:$guavaVersion"
             
-            artifactId 'nvlist-android'
+            // gdx-test is a required dependency since it contains the GdxUiTest test category
+            testCompile "nl.weeaboo.gdx-test:gdx-test-core:$gdxTestVersion"
+        }
+        
+        test {
+            def uiTest = project.hasProperty('uiTest')
+            inputs.property('uiTest', uiTest) // Re-execute task if uiTest property changes        
+            useJUnit {
+                if (!uiTest) {            
+                    // Exclude UI tests by default
+                    excludeCategories 'nl.weeaboo.gdx.test.junit.GdxUiTest'
+                }
+            }
+        }          
+
+        jacocoTestReport {
+            reports {
+                xml.enabled true
+            }
+        }
+        
+        project.apply from: rootProject.file('errorprone.gradle')
+        
+        // Apply JMH plugin
+        if (file('src/jmh/java').exists()) {
+            // Only apply JMH if there are any tests (otherwise the task fails)
+            project.apply plugin: "me.champeau.gradle.jmh"
+                
+	        jmh {
+	            fork = 1
+	        }
         }
     }
-    repositories {
-        maven {
-            // Local repo for testing
-            url "$buildDir/repo"
+
+    bintray {
+        user = System.getenv('BINTRAY_USER')
+        key = System.getenv('BINTRAY_KEY')
+        pkg {
+            repo = 'nvlist'
+            name = 'nvlist'
+            licenses = ['Apache-2.0']
+            vcsUrl = 'https://github.com/anonl/nvlist.git'
+            version {
+                name = project.version
+            }          
         }
-    }    
+    }
 }
 
-bintray {   
-    user = System.getenv('BINTRAY_USER')
-    key = System.getenv('BINTRAY_KEY')
-    publications = ['api', 'core', 'desktop', 'android']
-    pkg {
-        repo = 'nvlist'
-        name = 'nvlist'
-        licenses = ['Apache-2.0']
-        vcsUrl = 'https://github.com/anonl/nvlist.git'
-        version {
-            name = project.version
+apply plugin: 'distribution'
+
+distributions {
+    main {
+        contents {
+            from('template') {
+                include 'res/**'
+                include 'build-res/**'
+                include 'build-tools/**'
+            }
+            from{ project(':nvlist-buildgui').shadowJar }
         }
     }
 }
+
+tasks.distTar.enabled = false // Don't bother generating a .tar distribution

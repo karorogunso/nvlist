@@ -1,15 +1,22 @@
 package nl.weeaboo.vn.scene;
 
+import javax.annotation.Nullable;
+
 import nl.weeaboo.vn.core.BlendMode;
 import nl.weeaboo.vn.math.Matrix;
 import nl.weeaboo.vn.render.IDrawTransform;
 
-public interface IDrawable extends IVisualElement, IColorizable, IDrawTransform {
+public interface IDrawable extends IVisualElement, IColorizable, IDrawTransform, IPositionable {
 
-	@Override
+    /**
+     * @return The parent layer that contains this drawable, or {@code null} if not attached to any layer.
+     */
+    @Nullable ILayer getLayer();
+
+    @Override
     BlendMode getBlendMode();
 
-	@Override
+    @Override
     boolean isClipEnabled();
 
     /**
@@ -20,42 +27,90 @@ public interface IDrawable extends IVisualElement, IColorizable, IDrawTransform 
      */
     boolean isVisible(double minAlpha);
 
-	/**
-	 * Checks if the specified X/Y point lies 'inside' this renderable. What's considered inside may be
-	 * different depending on the type of renderable.
-	 *
-	 * @param cx The X-coordinate of the point to test.
-	 * @param cy The Y-coordinate of the point to test.
-	 * @return <code>true</code> if the point is contained within this renderable.
-	 */
-	boolean contains(double cx, double cy);
+    /**
+     * Checks if the specified X/Y point lies 'inside' this renderable. What's considered inside may be
+     * different depending on the type of renderable.
+     *
+     * @param cx The X-coordinate of the point to test.
+     * @param cy The Y-coordinate of the point to test.
+     * @return <code>true</code> if the point is contained within this renderable.
+     */
+    boolean contains(double cx, double cy);
 
-    void setZ(short z);
-
+    /**
+     * X-coordinate of the drawable. How this corresponds to the final visual bounds depends on the type of drawable.
+     */
     double getX();
+
+    /**
+     * Y-coordinate of the drawable. How this corresponds to the final visual bounds depends on the type of drawable.
+     */
     double getY();
+
+    /**
+     * Width of the drawable.
+     * @see #getVisualBounds()
+     */
     double getWidth(); // getVisualBounds().width
+
+    /**
+     * Height of the drawable.
+     * @see #getVisualBounds()
+     */
     double getHeight(); // getVisualBounds().height
 
     @Override
     Matrix getTransform();
 
-	void setX(double x); //Calls setPos
-	void setY(double y); //Calls setPos
-	void setWidth(double w); //Calls setSize
-	void setHeight(double h); //Calls setSize
-    void translate(double dx, double dy); //Calls setPos
-	void setPos(double x, double y);
-	void setSize(double w, double h);
+    /**
+     * Sets the X-coordinate of the drawable.
+     * @see #getX()
+     * @see #setPos(double, double)
+     */
+    @Override
+    void setX(double x); //Calls setPos
 
-	/**
-	 * Moves and stretches this drawable to make it fit inside the specified bounding box.
-	 */
-	void setBounds(double x, double y, double w, double h);
+    /**
+     * Sets the Y-coordinate of the drawable.
+     * @see #getY()
+     * @see #setPos(double, double)
+     */
+    @Override
+    void setY(double y); //Calls setPos
 
-	void setVisible(boolean v);
+    /**
+     * Stretches the drawable to the given width/height.
+     */
+    @Override
+    void setSize(double w, double h);
 
-	void setBlendMode(BlendMode m);
-	void setClipEnabled(boolean clip);
+    /**
+     * Moves and stretches this drawable to make it fit inside the specified bounding box.
+     */
+    @Override
+    void setBounds(double x, double y, double w, double h);
+
+    /**
+     * Changes the Z-index.
+     * @see #getZ()
+     */
+    void setZ(short z);
+
+    /**
+     * Sets the visibility flag.
+     */
+    void setVisible(boolean v);
+
+    /**
+     * Sets the blend mode.
+     * @see #getBlendMode()
+     */
+    void setBlendMode(BlendMode m);
+
+    /**
+     * Enabled/disables clipping.
+     * @see #isClipEnabled()
+     */
+    void setClipEnabled(boolean clip);
 
 }

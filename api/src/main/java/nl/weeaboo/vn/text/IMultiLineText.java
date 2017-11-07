@@ -1,8 +1,12 @@
 package nl.weeaboo.vn.text;
 
+import nl.weeaboo.common.Rect2D;
+
 public interface IMultiLineText extends IText {
 
-    /** @return The index of the first visible line. */
+    /**
+     * @return The index of the first visible line.
+     */
     int getStartLine();
 
     /**
@@ -11,10 +15,14 @@ public interface IMultiLineText extends IText {
      */
     int getEndLine();
 
-    /** @return The number of lines in the current text layout. */
+    /**
+     * @return The number of lines in the current text layout.
+     */
     int getLineCount();
 
-    /** @return The glyph offset at which the requested line starts. */
+    /**
+     * @return The glyph offset at which the requested line starts.
+     */
     int getGlyphOffset(int line);
 
     /** Word-wrap width for this multi-line text */
@@ -47,5 +55,16 @@ public interface IMultiLineText extends IText {
 
     /** Returns the minimum bounding text height for the requested line range. */
     float getTextHeight(int startLine, int endLine);
+
+    /**
+     * @return The bounding box of the text in the requested line, relative to the origin of the entire text layout (not
+     *         just the visible part).
+     */
+    Rect2D getLineBounds(int lineIndex);
+
+    /**
+     * Calculates the text height given a set width.
+     */
+    double calculateTextHeight(double widthHint);
 
 }

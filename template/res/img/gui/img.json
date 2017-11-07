@@ -1,0 +1,89 @@
+{
+    "version": "1.0",
+    
+    "images": [
+        {
+            "file": "button.png",
+            "width": 128,
+            "height": 128,
+            "subRects": [
+                { "id": "topleft",     "rect": [ 0,  0, 16, 16] },
+                { "id": "top",         "rect": [16,  0, 32, 16] },
+                { "id": "topright",    "rect": [48,  0, 16, 16] },
+                { "id": "left",        "rect": [ 0, 16, 16, 32] },
+                { "id": "center",      "rect": [16, 16, 32, 32] },
+                { "id": "right",       "rect": [48, 16, 16, 32] },
+                { "id": "bottomleft",  "rect": [ 0, 48, 16, 16] },
+                { "id": "bottom",      "rect": [16, 48, 32, 16] },
+                { "id": "bottomright", "rect": [48, 48, 16, 16] },
+
+                { "id": "pressed-topleft",     "rect": [ 64,  0, 16, 16] },
+                { "id": "pressed-top",         "rect": [ 80,  0, 32, 16] },
+                { "id": "pressed-topright",    "rect": [112,  0, 16, 16] },
+                { "id": "pressed-left",        "rect": [ 64, 16, 16, 32] },
+                { "id": "pressed-center",      "rect": [ 80, 16, 32, 32] },
+                { "id": "pressed-right",       "rect": [112, 16, 16, 32] },
+                { "id": "pressed-bottomleft",  "rect": [ 64, 48, 16, 16] },
+                { "id": "pressed-bottom",      "rect": [ 80, 48, 32, 16] },
+                { "id": "pressed-bottomright", "rect": [112, 48, 16, 16] },
+                
+                { "id": "rollover-topleft",     "rect": [ 0,  64, 16, 16] },
+                { "id": "rollover-top",         "rect": [16,  64, 32, 16] },
+                { "id": "rollover-topright",    "rect": [48,  64, 16, 16] },
+                { "id": "rollover-left",        "rect": [ 0,  80, 16, 32] },
+                { "id": "rollover-center",      "rect": [16,  80, 32, 32] },
+                { "id": "rollover-right",       "rect": [48,  80, 16, 32] },
+                { "id": "rollover-bottomleft",  "rect": [ 0, 112, 16, 16] },
+                { "id": "rollover-bottom",      "rect": [16, 112, 32, 16] },
+                { "id": "rollover-bottomright", "rect": [48, 112, 16, 16] },
+
+                { "id": "disabled-topleft",     "rect": [ 64,  64, 16, 16] },
+                { "id": "disabled-top",         "rect": [ 80,  64, 32, 16] },
+                { "id": "disabled-topright",    "rect": [112,  64, 16, 16] },
+                { "id": "disabled-left",        "rect": [ 64,  80, 16, 32] },
+                { "id": "disabled-center",      "rect": [ 80,  80, 32, 32] },
+                { "id": "disabled-right",       "rect": [112,  80, 16, 32] },
+                { "id": "disabled-bottomleft",  "rect": [ 64, 112, 16, 16] },
+                { "id": "disabled-bottom",      "rect": [ 80, 112, 32, 16] },
+                { "id": "disabled-bottomright", "rect": [112, 112, 16, 16] },
+            ]
+        },
+        {
+            "file": "textlog.png",
+            "width": 128,
+            "height": 64,
+            "subRects": [
+                { "id": "edge-top",    "rect": [ 1,  1, 62, 62] },
+                { "id": "edge-bottom", "rect": [65,  1, 62, 62] },
+            ]
+        },        
+        {   
+            "file": "savescreen.png",
+            "width": 512,
+            "height": 1024,
+            "subRects": [
+                { "id": "slotButton-normal",   "rect": [  1,129,254,190] },
+                { "id": "slotButton-rollover", "rect": [257,129,254,190] },
+                { "id": "slotButton-pressed",  "rect": [  1,321,254,190] },
+                { "id": "slotButton-disabled", "rect": [257,321,254,190] },
+                { "id": "pageButton-normal",   "rect": [  1,513, 61, 61] },
+                { "id": "pageButton-rollover", "rect": [ 65,513, 61, 61] },
+                { "id": "pageButton-pressed",  "rect": [129,513, 61, 61] },
+                { "id": "pageButton-disabled", "rect": [193,513, 61, 61] },
+                { "id": "button-normal",       "rect": [  1,577,253, 61] },
+                { "id": "button-rollover",     "rect": [  1,641,253, 61] },
+                { "id": "button-pressed",      "rect": [  1,705,253, 61] },
+                { "id": "button-disabled",     "rect": [  1,769,253, 61] },
+                { "id": "quicksave-normal",    "rect": [257,577,253, 61] },
+                { "id": "quicksave-rollover",  "rect": [257,641,253, 61] },
+                { "id": "quicksave-pressed",   "rect": [257,705,253, 61] },
+                { "id": "quicksave-disabled",  "rect": [257,769,253, 61] },
+                { "id": "newSlot",         "rect": [  1,  1,254,126] },
+                { "id": "noImage",         "rect": [257,  1,254,126] },
+                { "id": "fade-top",        "rect": [257,513, 62, 62] },
+                { "id": "fade-bottom",     "rect": [321,513, 62, 62] },
+                { "id": "newSave",         "rect": [  1,833, 62, 30] },
+            ]
+        },
+    ]
+}

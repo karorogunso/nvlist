@@ -5,6 +5,15 @@ package nl.weeaboo.vn.core;
  */
 public interface IUpdateable {
 
-    public void update();
+    IUpdateable EMPTY = new IUpdateable() {
+        @Override
+        public void update() {
+        }
+    };
+
+    /**
+     * Perform some task. This method is more or less equivalent to {@link Runnable#run()}.
+     */
+    void update();
 
 }

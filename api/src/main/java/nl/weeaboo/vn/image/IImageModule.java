@@ -2,7 +2,10 @@ package nl.weeaboo.vn.image;
 
 import java.util.Collection;
 
+import javax.annotation.Nullable;
+
 import nl.weeaboo.common.Dim;
+import nl.weeaboo.filesystem.FilePath;
 import nl.weeaboo.vn.core.IModule;
 import nl.weeaboo.vn.core.IResourceResolver;
 import nl.weeaboo.vn.core.ResourceLoadInfo;
@@ -14,30 +17,48 @@ import nl.weeaboo.vn.script.IScriptContext;
 
 public interface IImageModule extends IModule, IResourceResolver {
 
+    /**
+     * Creates a new image drawable and adds it to the specified layer.
+     */
     IImageDrawable createImage(ILayer layer);
 
+    /**
+     * Creates a new text drawable and adds it to the specified layer.
+     */
     ITextDrawable createTextDrawable(ILayer layer);
 
+    /**
+     * Creates a new button drawable and adds it to the specified layer.
+     */
     IButton createButton(ILayer layer, IScriptContext scriptContext);
 
     /**
-     * Convenience method for {@link #getTexture(ResourceLoadInfo, boolean)}
+     * Convenience method for {@link #getTexture(ResourceLoadInfo, boolean)}.
      */
-    ITexture getTexture(String filename);
+    @Nullable ITexture getTexture(FilePath filename);
 
     /**
-     * Creates a texture object from the specified filename.
+     * Attempts to load the texture with the specified filename.
      *
-     * @param info Filename of the requested resource and related metadata.
-     * @param suppressErrors If <code>true</code> doesn't log any errors that may occur.
+     * @param path Filename of the requested resource and related metadata.
+     * @param suppressErrors If {@code true} doesn't log any errors that may occur.
+     * @return The texture, or {@code null} if loading failed.
      */
-    ITexture getTexture(ResourceLoadInfo info, boolean suppressErrors);
+    @Nullable ITexture getTexture(ResourceLoadInfo path, boolean suppressErrors);
 
     /**
-     * Creates a solid-color texture with the given color and dimensions. The {@code scaleX} and
-     * {@code scaleY} factors scale from pixel coordinates to the coordinates of image state.
+     * Attempts to load a ninepatch based on the specified filename.
+     *
+     * @param path Filename of the requested resource and related metadata.
+     * @param suppressErrors If {@code true} doesn't log any errors that may occur.
+     * @return The ninepatch, or {@code null} if loading failed.
      */
-    ITexture createTexture(int colorARGB, int width, int height, double scaleX, double scaleY);
+    @Nullable INinePatch getNinePatch(ResourceLoadInfo path, boolean suppressErrors);
+
+    /**
+     * Creates a solid-color texture with the given color.
+     */
+    ITexture getColorTexture(int argb);
 
     /**
      * Creates a texture from the given image data. The {@code scaleX} and {@code scaleY} factors scale from
@@ -53,7 +74,7 @@ public interface IImageModule extends IModule, IResourceResolver {
     /**
      * Returns the paths for all image files in the specified folder and its sub-folders.
      */
-    Collection<String> getImageFiles(String folder);
+    Collection<FilePath> getImageFiles(FilePath folder);
 
     /**
      * Changes the desired image resolution (width x height). Images are loaded from the resource folder that
@@ -63,7 +84,7 @@ public interface IImageModule extends IModule, IResourceResolver {
 
     /**
      * Schedules a screenshot of the given layer. Use {@link IScreenshot#isAvailable()} and/or
-     * {@link IScreenshot#isCancelled()} to find out the state of the returned screenshot object.
+     * {@link IScreenshot#isFailed()} to find out the state of the returned screenshot object.
      *
      * @param layer The layer to take the screenshot in. Any layers beneath this layer will also be visible.
      * @param z The z-index at which to take the screenshot. Any objects in front of this z index will not be
@@ -79,6 +100,6 @@ public interface IImageModule extends IModule, IResourceResolver {
      * Suggests to the resource loader that the image with the given filename should be preloaded into memory.
      * @param filename Path to the image file.
      */
-    void preload(String filename);
+    void preload(FilePath filename);
 
 }

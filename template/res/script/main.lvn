@@ -11,32 +11,83 @@ end
 
 function titlescreen()
 	print("titlescreen")
-
 	print(System.getEnv())
-
-	local textbox = Text.createTextDrawable()
-	setMainTextBox(textbox)
-	
-	local pad = 16
-	textbox:setBounds(pad, pad, textbox:getWidth() - pad * 2, textbox:getHeight() / 4)
-	textbox:setText("Test sentence for the text drawable.\nSecond line of text.")
-	textbox:setVisibleText(0)
-	
-	waitClick()
-@@
-ABC 1   
-ABC 2   
-ABC 3   
-ABC 4   
-ABC 5   
-@@
-
-    movie("test")
     
-@@    
-Finished
-@@
+    --local slot = saveScreen()
+    --Log.info("Saved in slot {}", slot)
+    
+    testTextLog()
+    --testGuiScreen()
 
+    registerSpeaker("guy", "Mr. Guy")
+    registerSpeaker("man", Text.createStyledText("The Man", Text.createStyle{color=0xFFFF0000}))
+    
+    setTextModeADV()
+    texton()
+    
+    local i = img("ziponly", 200, 200)
+    i:setAlign(0.5, 0.5)
+
+    local mergedTex = composite({
+        {tex="ziponly"},
+        {tex="ziponly", pos={100, 100}},
+    })
+    i = img(mergedTex, 400, 0)
+    
+    --[[
+    for level,t in ipairs(blurMultiple("testjng", 4, 8)) do
+        local i = img(t)
+        i:setPos(100 * level, 0)
+    end
+    ]]
+    
+    --[[
+    local prevBlurred = nil
+    for n=1,100,0.5 do
+        local blurred = img(blur("testjng", n))
+        
+        if prevBlurred ~= nil then
+            prevBlurred:destroy()
+        end
+        prevBlurred = blurred        
+        
+        blurred:setPos(screenWidth/2, screenHeight/2)
+        blurred:setAlign(0.5, 0.5)
+        yield(3)
+    end
+    ]]
+
+    -- button("gui/button")
+    
+    for i=1,3 do
+        local selected = choice("one two three", "b", "Agh")
+        print("selected", selected)
+    end
+
+    --movie("test")
+    call("images")    
+    --call("speakers")
+end
+
+function testTextLog()
+    for n=1,10 do
+        appendTextLog("If your decorators include information that is expensive to compute or potentially distracting, you may want to contribute your own preferences that allow the user to further fine-tune the decorator once it is on.", true)
+    end
+
+    textLog()
+end
+
+function testGuiScreen()
+    local panel = gridPanel()
+    
+    panel:add(img("test")):grow()
+    
+    panel:add(img("test"))
+    panel:endRow()
+    panel:add(img("test")):growY()
+    panel:add(img("test"))
+
+    waitClick()
 end
 
 @@

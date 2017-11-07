@@ -1,13 +1,11 @@
 package nl.weeaboo.vn.input;
 
-import java.io.Serializable;
-
 import com.google.common.collect.ImmutableList;
 
-import nl.weeaboo.common.Checks;
+import nl.weeaboo.common.AbstractId;
 
 /** Virtual key code. Used by the key config for mapping logical actions to one or more inputs. */
-public final class VKey implements Serializable {
+public final class VKey extends AbstractId {
 
     private static final long serialVersionUID = 1L;
 
@@ -24,45 +22,21 @@ public final class VKey implements Serializable {
     public static final VKey MOUSE_LEFT = new VKey("mouseLeft");
 
     private static final ImmutableList<VKey> STANDARD_KEYS = ImmutableList.of(
-        UP, DOWN, LEFT, RIGHT,
-        CONFIRM, CANCEL, TEXT_CONTINUE, SKIP,
-        MOUSE_LEFT
+            UP, DOWN, LEFT, RIGHT,
+            CONFIRM, CANCEL, TEXT_CONTINUE, SKIP,
+            MOUSE_LEFT
     );
 
-    private final String id;
-
     private VKey(String id) {
-        this.id = Checks.checkNotNull(id);
+        super(id);
     }
 
+    /** Creates a {@link VKey} instance from an ID string. */
     public static VKey fromString(String id) {
         return new VKey(id);
     }
 
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public int hashCode() {
-        return id.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof VKey)) {
-            return false;
-        }
-
-        VKey other = (VKey)obj;
-        return id.equals(other.id);
-    }
-
-    @Override
-    public String toString() {
-        return getId();
-    }
-
+    /** Returns the default set of {@link VKey} instances. */
     public static Iterable<VKey> getStandardKeys() {
         return STANDARD_KEYS;
     }

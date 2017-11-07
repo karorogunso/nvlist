@@ -1,14 +1,15 @@
 package nl.weeaboo.vn.math;
 
+import static nl.weeaboo.test.SerializeTester.deserializeObject;
+import static nl.weeaboo.test.SerializeTester.serializeObject;
 import static nl.weeaboo.vn.ApiTestUtil.EPSILON;
-import static nl.weeaboo.vn.ApiTestUtil.deserializeObject;
-import static nl.weeaboo.vn.ApiTestUtil.serializeObject;
 
-import java.io.IOException;
 import java.util.Random;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.google.common.testing.EqualsTester;
 
 import nl.weeaboo.vn.ApiTestUtil;
 
@@ -21,15 +22,12 @@ public class MatrixTest {
         Matrix alpha = new Matrix(0, 0, 0, 0, 0, 0);
         Matrix beta = new Matrix(0, 0, 0, 0, -0.01, 0);
 
-        Assert.assertFalse(alpha.equals(null));
+        new EqualsTester()
+            .addEqualityGroup(alpha, alpha.mutableCopy())
+            .addEqualityGroup(beta)
+            .testEquals();
 
-        Assert.assertTrue(alpha.equals(alpha));
         Assert.assertTrue(alpha.equals(alpha, 0));
-        Assert.assertTrue(alpha.equals(alpha.mutableCopy()));
-        Assert.assertEquals(alpha.hashCode(), alpha.mutableCopy().hashCode());
-
-        Assert.assertFalse(alpha.equals(beta));
-        Assert.assertNotEquals(alpha.hashCode(), beta.mutableCopy().hashCode());
         Assert.assertFalse(alpha.equals(beta, 0.001));
         Assert.assertTrue(alpha.equals(beta, 0.01));
     }
@@ -145,7 +143,7 @@ public class MatrixTest {
             float x = random.nextFloat();
             float y = random.nextFloat();
 
-            Vec2 expected = new Vec2(33*x+22*y+11, 44*x+55*y+66);
+            Vec2 expected = new Vec2(33 * x + 22 * y + 11, 44 * x + 55 * y + 66);
             ApiTestUtil.assertEquals(expected.x, expected.y, transform.transform(x, y), EPSILON);
 
             Vec2 v = new Vec2(x, y);
@@ -235,16 +233,16 @@ public class MatrixTest {
         Assert.assertArrayEquals(new float[] {
                 11, 44, 0, 0,
                 22, 55, 0, 0,
-                 0,  0, 1, 0,
+                0,  0,  1, 0,
                 33, 66, 0, 1
-            }, glMatrix, GL_EPSILON);
+        }, glMatrix, GL_EPSILON);
 
         // Generated GL matrices are cached (implementation detail, but important to know if that ever changes)
         Assert.assertSame(glMatrix, alpha.toGLMatrix());
     }
 
     @Test
-    public void serialize() throws IOException, ClassNotFoundException {
+    public void serialize() {
         Matrix alpha = new Matrix(11, 22, 33, 44, 55, 66);
 
         Assert.assertEquals(alpha, deserializeObject(serializeObject(alpha), Matrix.class));

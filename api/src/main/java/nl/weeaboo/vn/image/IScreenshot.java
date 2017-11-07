@@ -1,50 +1,55 @@
 package nl.weeaboo.vn.image;
 
-import java.io.Serializable;
-
 import nl.weeaboo.common.Dim;
+import nl.weeaboo.vn.render.IAsyncRenderTask;
+import nl.weeaboo.vn.scene.IVisualElement;
 
 /**
  * Wrapper object for screenshot operations. Since screenshots can only be taken during rendering, it may take
  * several frames for a scheduled screenshot to become available.
  */
-public interface IScreenshot extends Serializable {
+public interface IScreenshot extends IAsyncRenderTask {
 
-	public void cancel();
+    /**
+     * Marks this screenshot object as transient; its pixels won't be serialized.
+     */
+    void markTransient();
 
-	/**
-	 * Marks this screenshot object as transient; its pixels won't be serialized.
-	 */
-	public void markTransient();
+    /**
+     * @deprecated Deprecated since NVList 4.0
+     */
+    @Deprecated
+    void makeTransient();
 
-	@Deprecated
-	public void makeTransient();
-
-	/** @return {@code true} when the screenshot operation has completed successfully. */
-	public boolean isAvailable();
-
-	/**
+    /**
      * A volatile screenshot only stores its pixels on the GPU. As a consequence, it may lose its pixels at
      * any time.
      */
-	public boolean isVolatile();
+    boolean isVolatile();
 
-	/** @see #markTransient() */
-	public boolean isTransient();
+    /**
+     * Returns whether this screenshot is transient.
+     *
+     * @see #markTransient()
+     */
+    @Override
+    boolean isTransient();
 
-	/** @see #cancel() */
-	public boolean isCancelled();
+    /**
+     * @return The screen size in pixels when this screenshot was taken.
+     */
+    Dim getScreenSize();
 
-	/**
-	 * Warning: May return {@code null} if the screenshot is not yet available or volatile.
-	 */
-	public ITextureData getPixels();
+    /**
+     * The Z-index at which this screenshot will be, or was, taken.
+     *
+     * @see IVisualElement#getZ()
+     */
+    short getZ();
 
-	/**
-	 * @return The screen size in pixels when this screenshot was taken.
-	 */
-	public Dim getScreenSize();
-
-	public short getZ();
+    /**
+     * Warning: May return {@code null} if the screenshot is not yet available or volatile.
+     */
+    ITextureData getPixels();
 
 }
